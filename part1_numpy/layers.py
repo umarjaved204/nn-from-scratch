@@ -31,6 +31,10 @@ class ReLU:
         self.x = x  # saved for backward()
         return np.maximum(0, x)  # negatives become 0, everything else unchanged
 
+    def backward(self, dout):
+        # dout has the same shape as x
+        return dout * (self.x > 0)  # dout where x > 0, zero elsewhere
+
 
 class SoftmaxCrossEntropy:
     def forward(self, logits, y):
@@ -54,6 +58,12 @@ class SoftmaxCrossEntropy:
         self.y = y
         return loss
 
+    def backward(self):
+        n = len(self.y)
+        grad = self.probs.copy()  # copy, so we don't change the saved probs
+        grad[np.arange(n), self.y] -= 1  # subtract 1 at each row's correct class
+        return grad / n
+
 
 if __name__ == "__main__":
     layer = Linear(784, 128)
@@ -71,4 +81,14 @@ if __name__ == "__main__":
 
     # Huge scores must not break (no nan / inf)
     print(loss_fn.forward(np.array([[1000.0, 0.0, 0.0]]), np.array([0])))  # expect ~0
+
+    # ReLU backward: gradient passes only where the input was positive
+    relu.forward(np.array([-2.0, 0.0, 3.0]))
+    print(relu.backward(np.array([5.0, 5.0, 5.0])))   # expect [0. 0. 5.]
+
+    # Softmax-CE backward
+    loss_fn.forward(np.zeros((2, 3)), np.array([0, 2]))
+    print(loss_fn.backward())
+    # expect [[-0.333  0.167  0.167]
+    #         [ 0.167  0.167 -0.333]]
 
