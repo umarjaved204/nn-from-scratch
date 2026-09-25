@@ -2,18 +2,20 @@
 
 ## Phase 0 – Setup
 - [x] Project structure, `.gitignore`, `LICENSE`, `requirements.txt`
-- [ ] Create virtual environment and install dependencies
-- [ ] Install CUDA build of PyTorch and confirm `torch.cuda.is_available()`
-- [ ] Create GitHub repo and push initial commit
+- [x] Create virtual environment and install dependencies
+- [x] Install CUDA build of PyTorch and confirm `torch.cuda.is_available()`
+- [x] Create GitHub repo and push initial commit
 
 ## Phase 1 – NumPy MLP (`part1_numpy/`)
-- [ ] 1.1 Forward pass: `Linear`, `ReLU`, softmax + cross-entropy (log-sum-exp) — *check: loss ≈ ln(10) ≈ 2.30 at init*
-- [ ] 1.2 Backward pass for each layer — *check: softmax-CE gradient = `probs − one_hot`*
-- [ ] 1.3 Gradient check against finite differences — *check: relative error < 1e-6*
-- [ ] 1.4 Training loop: He init, shuffled minibatches, SGD, evaluation — *check: overfits one batch to ~0 loss*
-- [ ] 1.5 Train 784 → 128 → 10 on MNIST — *target: > 97% test accuracy*
+- [x] 1.1 Forward pass: `Linear`, `ReLU`, softmax + cross-entropy (log-sum-exp) — *check: loss ≈ ln(10) ≈ 2.30 at init*
+- [x] 1.2 Backward pass for each layer — *check: softmax-CE gradient = `probs − one_hot`*
+- [x] 1.3 Gradient check against finite differences — *check: relative error < 1e-6*
+- [x] 1.4 Training loop: He init, shuffled minibatches, SGD, evaluation — *check: overfits one batch to ~0 loss*
+- [x] 1.5 Train 784 → 128 → 10 on MNIST — *result: 97.5% test accuracy*
+- [ ] Turn the checks into `pytest` tests (`part1_numpy/tests/test_gradients.py`)
 - [ ] Stretch: momentum, Adam
-- [ ] Write `part1_numpy/README.md` with results and plot
+- [x] Write `part1_numpy/README.md` with results and plot
+- [ ] Write the "What I learned" section in your own words
 
 ## Phase 2 – Character-level GPT (`part2_gpt/`)
 - [ ] 2.1 Tokenizer and data: vocab, `encode`/`decode`, train/val split, `get_batch` — *check: `decode(encode(s)) == s`*

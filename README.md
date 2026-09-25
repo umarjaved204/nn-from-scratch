@@ -9,11 +9,13 @@ Two projects built from first principles to understand how modern language model
 
 | Project | Metric | Result |
 |---|---|---|
-| NumPy MLP (784 → 128 → 10) | MNIST test accuracy | _TBD_ |
+| NumPy MLP (784 → 128 → 10) | MNIST test accuracy | **97.5%** |
 | Char-level GPT (CPU preset) | Validation loss | _TBD_ |
 | Char-level GPT (GPU preset) | Validation loss | _TBD_ |
 
-<!-- Add a loss curve and a generated text sample here once training runs. -->
+![MNIST training loss and accuracy](assets/mnist_training.png)
+
+<!-- Add the GPT loss curve and a generated text sample here once Part 2 trains. -->
 
 ## Setup
 
