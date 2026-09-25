@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Datasets (downloaded by scripts, not committed)
+part1_numpy/data/*
+!part1_numpy/data/.gitkeep
+part2_gpt/data/*
+!part2_gpt/data/.gitkeep
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.pth
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

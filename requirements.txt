@@ -1,0 +1,8 @@
+# For GPU training on an NVIDIA card, install PyTorch from the CUDA index first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+# then install the rest with: pip install -r requirements.txt
+numpy>=2.0
+matplotlib>=3.8
+torch>=2.4
+pytest>=8.0
+ruff>=0.6

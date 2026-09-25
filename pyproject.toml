@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+testpaths = ["part1_numpy/tests", "part2_gpt/tests"]
+pythonpath = ["part1_numpy", "part2_gpt"]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
