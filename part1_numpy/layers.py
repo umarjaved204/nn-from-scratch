@@ -25,6 +25,12 @@ class Linear:
         self.x = x  # saved for backward()
         return x @ self.W + self.b # shape (batch_size, out_features)
 
+    def backward(self, dout):
+        # dout: (batch_size, out_features)
+        self.dW = self.x.T @ dout  # shape (in_features, out_features), same as W
+        self.db = dout.sum(axis=0)  # shape (out_features,), same as b
+        return dout @ self.W.T  # dx: shape (batch_size, in_features), same as x
+
 
 class ReLU:
     def forward(self, x):
@@ -91,4 +97,12 @@ if __name__ == "__main__":
     print(loss_fn.backward())
     # expect [[-0.333  0.167  0.167]
     #         [ 0.167  0.167 -0.333]]
+    
+    # Linear backward: each gradient must match the shape of what it belongs to
+    layer = Linear(4, 3)
+    layer.forward(np.random.randn(5, 4))
+    dx = layer.backward(np.ones((5, 3)))
+    print(layer.dW.shape, layer.db.shape, dx.shape)   # expect (4, 3) (3,) (5, 4)
+    print(layer.db)                                   # expect [5. 5. 5.]
+
 
