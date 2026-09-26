@@ -38,8 +38,8 @@ python part1_numpy/train.py
 
 # Part 2
 python part2_gpt/scripts/download_data.py
-python part2_gpt/train.py --config cpu      # or: --config gpu
-python part2_gpt/sample.py
+python part2_gpt/train.py --config cpu      # presets: debug, cpu, gpu, large (see part2_gpt/config.py)
+python part2_gpt/sample.py --config cpu --prompt "ROMEO:" --temperature 0.8
 
 # Tests
 pytest

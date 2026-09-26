@@ -34,8 +34,9 @@ def relative_error(a, b):
     return np.max(np.abs(a - b) / np.maximum(np.abs(a) + np.abs(b), 1e-8))
 
 
-if __name__ == "__main__":
-    np.random.seed(0)
+def check_gradients(seed=0):
+    """Compare analytic and numerical gradients on a tiny network. Returns {name: relative error}."""
+    np.random.seed(seed)
 
     # A tiny network: 4 inputs -> 5 hidden -> 3 classes, batch of 2
     x = np.random.randn(2, 4)
@@ -48,11 +49,10 @@ if __name__ == "__main__":
 
     # Analytic gradients: one forward pass, then backward through every layer
     loss()
-    grad = ce.backward()  # dloss/dlogits
-    grad = l2.backward(grad)  # dloss/dh
-    grad = relu.backward(grad)  # dloss/dh
-    dx = l1.backward(grad)  # dloss/dx
-    
+    grad = ce.backward()        # dloss/dlogits
+    grad = l2.backward(grad)    # dloss/dh (after ReLU)
+    grad = relu.backward(grad)  # dloss/dh (before ReLU)
+    dx = l1.backward(grad)      # dloss/dx
 
     # Compare against numerical gradients
     checks = {
@@ -62,6 +62,9 @@ if __name__ == "__main__":
         "l2.db": (l2.db, numerical_gradient(loss, l2.b)),
         "dx":    (dx,    numerical_gradient(loss, x)),
     }
-    for name, (analytic, numeric) in checks.items():
-        err = relative_error(analytic, numeric)
+    return {name: relative_error(analytic, numeric) for name, (analytic, numeric) in checks.items()}
+
+
+if __name__ == "__main__":
+    for name, err in check_gradients().items():
         print(f"{name:6s} relative error: {err:.2e}  {'OK' if err < 1e-6 else 'FAIL'}")

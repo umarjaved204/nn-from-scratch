@@ -28,19 +28,25 @@ class GPTConfig:
     seed: int = 1337
 
 
+# Timings measured on a GeForce MX550 (2 GB). Every preset runs on the GPU when one is available.
 PRESETS: dict[str, GPTConfig] = {
     # Tiny model for tests and quick debugging runs
     "debug": GPTConfig(
         block_size=8, n_layer=1, n_head=2, n_embd=16, dropout=0.0,
         batch_size=4, max_iters=100, warmup_iters=10, eval_interval=50, eval_iters=10,
     ),
-    # Trains in minutes on a laptop CPU
+    # ~0.8M params; small enough to train on a laptop CPU. ~6 min on the MX550.
     "cpu": GPTConfig(
         block_size=64, n_layer=4, n_head=4, n_embd=128, dropout=0.0,
         batch_size=32, max_iters=3000, eval_interval=250, eval_iters=50,
     ),
-    # ~10.7M params; sized for a 2 GB GPU. Raise batch_size if memory allows.
-    "gpu": GPTConfig(),
+    # ~3.3M params; ~20 min and ~0.5 GB on the MX550
+    "gpu": GPTConfig(
+        n_layer=4, n_head=4, n_embd=256, batch_size=16, eval_interval=500, eval_iters=50,
+    ),
+    # ~10.8M params, the classic nanoGPT Shakespeare size; ~1 hour and ~1.1 GB on the MX550.
+    # (batch_size 32 needs slightly more than 2 GB, which slows the MX550 to a crawl)
+    "large": GPTConfig(batch_size=16, eval_interval=500, eval_iters=50),
 }
 
 
