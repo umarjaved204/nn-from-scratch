@@ -35,12 +35,12 @@ PRESETS: dict[str, GPTConfig] = {
         block_size=8, n_layer=1, n_head=2, n_embd=16, dropout=0.0,
         batch_size=4, max_iters=100, warmup_iters=10, eval_interval=50, eval_iters=10,
     ),
-    # ~0.8M params; small enough to train on a laptop CPU. ~6 min on the MX550.
+    # ~0.8M params; small enough to train on a laptop CPU. 3 min on the MX550 (val loss 1.59).
     "cpu": GPTConfig(
         block_size=64, n_layer=4, n_head=4, n_embd=128, dropout=0.0,
         batch_size=32, max_iters=3000, eval_interval=250, eval_iters=50,
     ),
-    # ~3.3M params; ~20 min and ~0.5 GB on the MX550
+    # ~3.3M params; 14 min and ~0.5 GB on the MX550 (val loss 1.51)
     "gpu": GPTConfig(
         n_layer=4, n_head=4, n_embd=256, batch_size=16, eval_interval=500, eval_iters=50,
     ),

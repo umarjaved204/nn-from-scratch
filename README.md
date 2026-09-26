@@ -10,12 +10,22 @@ Two projects built from first principles to understand how modern language model
 | Project | Metric | Result |
 |---|---|---|
 | NumPy MLP (784 → 128 → 10) | MNIST test accuracy | **97.5%** |
-| Char-level GPT (CPU preset) | Validation loss | _TBD_ |
-| Char-level GPT (GPU preset) | Validation loss | _TBD_ |
+| Char-level GPT (bigram baseline) | Validation loss | 2.50 |
+| Char-level GPT (0.8M params, `cpu` preset) | Validation loss | 1.59 |
+| Char-level GPT (3.3M params, `gpu` preset) | Validation loss | **1.51** |
 
 ![MNIST training loss and accuracy](assets/mnist_training.png)
 
-<!-- Add the GPT loss curve and a generated text sample here once Part 2 trains. -->
+![GPT train and validation loss](assets/loss_gpt_gpu.png)
+
+A sample from the GPT after 14 minutes of training on a laptop GPU:
+
+```
+Would he sought in y thing conscqual to golden-roor.
+
+BUCKINGHARDINE:
+Gester, I did-not gine own,
+```
 
 ## Setup
 

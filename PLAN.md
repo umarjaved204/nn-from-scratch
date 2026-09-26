@@ -26,8 +26,10 @@
 - [x] 2.6 AdamW, warmup + cosine LR, gradient clipping, dropout, train/val loss estimate, checkpoints
 - [x] 2.7 Sampling with temperature and top-k
 - [x] `pytest` tests: round trip, shapes, loss ≈ ln(65) at init, causality, generation past block_size
-- [ ] 2.8 Train the presets — *targets: val loss < 2.0 (cpu), ~1.6 (gpu), ~1.5 (large)*
-- [ ] Write `part2_gpt/README.md` with loss curve and samples
+- [x] 2.8 Train the presets — *results: val loss 1.59 (cpu, 3 min), 1.51 (gpu, 14 min)*
+- [ ] Optional: train the `large` preset (~1 hour)
+- [x] Write `part2_gpt/README.md` with loss curve and samples
+- [ ] Write the "What I learned" section in your own words
 
 ## Phase 3 – Experiments (optional)
 - [ ] Remove pieces one at a time: positional embeddings, √d_k scaling, residuals
