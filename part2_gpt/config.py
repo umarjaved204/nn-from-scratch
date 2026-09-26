@@ -14,6 +14,7 @@ class GPTConfig:
     n_embd: int = 384
     dropout: float = 0.2
     vocab_size: int | None = None  # set from the tokenizer at runtime
+    attention_scale: bool = True  # divide attention scores by sqrt(head_size); off only for the ablation
 
     # Training
     batch_size: int = 32

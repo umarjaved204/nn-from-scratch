@@ -32,8 +32,9 @@
 - [x] Write the "What I learned" section
 
 ## Phase 3 – Experiments (optional)
-- [ ] Remove pieces one at a time: positional embeddings, √d_k scaling, residuals
-- [ ] Visualize attention maps
+- [x] Remove √d_k scaling — *result: 1.600 vs 1.590 val loss; sharper attention (max weight 0.60 vs 0.45)*
+- [ ] Remove other pieces: positional embeddings, residuals
+- [x] Visualize attention maps — *previous-char and two-back heads in layer 0, long-range heads in layer 1*
 - [ ] Compare char-level vs BPE (`tiktoken`)
 - [ ] Train on a different corpus
 

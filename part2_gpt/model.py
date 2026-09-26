@@ -65,8 +65,9 @@ class Head(nn.Module):
     the values of itself and all earlier positions, weighted by how well its query matches their keys.
     """
 
-    def __init__(self, n_embd, head_size, block_size, dropout=0.0):
+    def __init__(self, n_embd, head_size, block_size, dropout=0.0, scale=True):
         super().__init__()
+        self.scale = scale
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.key = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
@@ -80,8 +81,11 @@ class Head(nn.Module):
         k = self.key(x)    # (B, T, head_size)
         v = self.value(x)  # (B, T, head_size)
 
-        # How well each query matches each key, scaled so softmax doesn't saturate: (B, T, T)
-        scores = q @ k.transpose(-2, -1) / math.sqrt(k.shape[-1])
+        # How well each query matches each key: (B, T, T)
+        scores = q @ k.transpose(-2, -1)
+        if self.scale:
+            scores = scores / math.sqrt(k.shape[-1])  # keeps softmax from saturating
+
         # Block the future: a position may not attend to anything after it
         scores = scores.masked_fill(self.mask[:T, :T] == 0, float("-inf"))
         # Each row becomes attention weights that add up to 1
@@ -99,7 +103,10 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         head_size = cfg.n_embd // cfg.n_head  # heads split the embedding so the total size is unchanged
         self.heads = nn.ModuleList(
-            [Head(cfg.n_embd, head_size, cfg.block_size, cfg.dropout) for _ in range(cfg.n_head)]
+            [
+                Head(cfg.n_embd, head_size, cfg.block_size, cfg.dropout, cfg.attention_scale)
+                for _ in range(cfg.n_head)
+            ]
         )
         self.proj = nn.Linear(cfg.n_embd, cfg.n_embd)  # mixes the heads' outputs back together
         self.dropout = nn.Dropout(cfg.dropout)

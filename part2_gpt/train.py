@@ -2,11 +2,14 @@
 
 Usage: python part2_gpt/train.py --config cpu                            (or: debug, gpu, large)
        python part2_gpt/train.py --config cpu --model bigram --lr 1e-2   (bigram baseline)
+       python part2_gpt/train.py --config cpu --no-attn-scale            (ablation: no sqrt(d) scaling)
 
-Saves the best checkpoint to part2_gpt/checkpoints/ and a loss plot to assets/.
+Saves the best checkpoint to part2_gpt/checkpoints/, the loss history to part2_gpt/logs/,
+and a loss plot to assets/.
 """
 
 import argparse
+import json
 import math
 import time
 from dataclasses import asdict
@@ -24,6 +27,7 @@ from model import GPT, BigramLanguageModel  # noqa: E402
 from tokenizer import get_batch, load_data  # noqa: E402
 
 CHECKPOINT_DIR = Path(__file__).resolve().parent / "checkpoints"
+LOG_DIR = Path(__file__).resolve().parent / "logs"
 ASSETS_DIR = Path(__file__).resolve().parents[1] / "assets"
 
 
@@ -103,33 +107,32 @@ def plot_losses(history, title, path):
     plt.close(fig)
 
 
-def main():
+def save_run(run_name, title, cfg, history, best_val):
+    """Save the loss history (for comparing runs later) and a loss plot (for the README)."""
+    LOG_DIR.mkdir(exist_ok=True)
+    log_path = LOG_DIR / f"{run_name}.json"
+    log = {"run": run_name, "best_val": best_val, "config": asdict(cfg), "history": history}
+    log_path.write_text(json.dumps(log, indent=2), encoding="utf-8")
+    print(f"loss history saved to {log_path}")
+
+    plot_path = ASSETS_DIR / f"loss_{run_name}.png"
+    plot_losses(history, title, plot_path)
+    print(f"loss plot saved to {plot_path}")
+
+
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="cpu", help="preset from config.py: debug, cpu, gpu or large")
     parser.add_argument("--model", default="gpt", choices=["gpt", "bigram"])
     parser.add_argument("--lr", type=float, help="override the preset's learning rate")
-    args = parser.parse_args()
+    parser.add_argument("--no-attn-scale", action="store_true",
+                        help="ablation: don't divide attention scores by sqrt(head_size)")
+    return parser.parse_args()
 
-    cfg = get_config(args.config)
-    if args.lr is not None:
-        cfg.learning_rate = args.lr
-    torch.manual_seed(cfg.seed)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    tokenizer, train_data, val_data = load_data()
-    cfg.vocab_size = tokenizer.vocab_size
-
-    if args.model == "gpt":
-        model = GPT(cfg).to(device)
-    else:
-        model = BigramLanguageModel(cfg.vocab_size).to(device)
+def train(model, model_type, cfg, tokenizer, train_data, val_data, device, checkpoint_path):
+    """The training loop. Saves the best checkpoint as it goes; returns (history, best val loss)."""
     optimizer = make_optimizer(model, cfg)
-    n_params = sum(p.numel() for p in model.parameters())
-    print(f"model: {args.model} ({n_params:,} params) | config: {args.config} "
-          f"| device: {device} | lr: {cfg.learning_rate}")
-
-    run_name = f"{args.model}_{args.config}"
-    checkpoint_path = CHECKPOINT_DIR / f"{run_name}.pt"
     history = {"step": [], "train": [], "val": []}
     best_val = float("inf")
     start_time = time.time()
@@ -150,7 +153,7 @@ def main():
                   f"lr {lr:.1e}  {time.time() - start_time:5.0f}s")
             if losses["val"] < best_val:
                 best_val = losses["val"]
-                save_checkpoint(checkpoint_path, model, args.model, cfg, tokenizer, step, best_val)
+                save_checkpoint(checkpoint_path, model, model_type, cfg, tokenizer, step, best_val)
 
         if step == cfg.max_iters:
             break
@@ -163,11 +166,38 @@ def main():
         torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)  # cap rare huge gradients
         optimizer.step()                       # update the weights
 
+    return history, best_val
+
+
+def main():
+    args = parse_args()
+    cfg = get_config(args.config)
+    if args.lr is not None:
+        cfg.learning_rate = args.lr
+    cfg.attention_scale = not args.no_attn_scale
+    torch.manual_seed(cfg.seed)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    tokenizer, train_data, val_data = load_data()
+    cfg.vocab_size = tokenizer.vocab_size
+
+    if args.model == "gpt":
+        model = GPT(cfg).to(device)
+    else:
+        model = BigramLanguageModel(cfg.vocab_size).to(device)
+    n_params = sum(p.numel() for p in model.parameters())
+    print(f"model: {args.model} ({n_params:,} params) | config: {args.config} "
+          f"| device: {device} | lr: {cfg.learning_rate}")
+
+    run_name = f"{args.model}_{args.config}" + ("_noscale" if args.no_attn_scale else "")
+    checkpoint_path = CHECKPOINT_DIR / f"{run_name}.pt"
+    history, best_val = train(
+        model, args.model, cfg, tokenizer, train_data, val_data, device, checkpoint_path
+    )
+
     print(f"\nbest val loss {best_val:.4f} | checkpoint saved to {checkpoint_path}")
     if args.config != "debug":  # debug runs are smoke tests; keep them out of the README assets
-        plot_path = ASSETS_DIR / f"loss_{run_name}.png"
-        plot_losses(history, f"Loss: {args.model}, {args.config} preset", plot_path)
-        print(f"loss plot saved to {plot_path}")
+        save_run(run_name, f"Loss: {run_name}", cfg, history, best_val)
 
     # Generate text, starting from a single newline character (id 0)
     context = torch.zeros((1, 1), dtype=torch.long, device=device)

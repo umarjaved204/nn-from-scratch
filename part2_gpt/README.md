@@ -74,6 +74,40 @@ Defined in [`config.py`](config.py):
 | `gpu` | 4 | 4 | 256 | 256 | 16 | 5,000 |
 | `large` | 6 | 6 | 384 | 256 | 16 | 5,000 |
 
+## Experiments
+
+### What does each attention head look at?
+
+![Attention weights of layer 0, head 3](../assets/attention_gpt_gpu_L0H3.png)
+
+Each row is a character and each column is an earlier character it can attend to; darker means more attention. This head (layer 0, head 3) almost always looks exactly **two characters back**.
+
+Measured on real validation text ([`scripts/attention_stats.py`](scripts/attention_stats.py) `--per-head`), the `gpu` model's 16 heads show clear specialisations:
+
+- **Layer 0 builds local context.** Head 0 puts 93% of its attention on the previous character, head 1 puts 97% there, and head 3 puts 94% on the character two back.
+- **Layer 1 looks far back.** Heads 1 and 3 spread their attention widely, reaching on average about 70 characters back.
+- **Some later heads track word and line breaks.** Layer 2 head 3 and layer 3 head 2 put about 40% of their attention on spaces and newlines, which make up only 19% of the text.
+
+<details>
+<summary>All 16 heads</summary>
+
+![Attention weights for every head](../assets/attention_gpt_gpu.png)
+
+</details>
+
+### Is the √d in attention actually needed?
+
+Attention divides its scores by √(head size) before the softmax. The usual explanation: without it, dot products grow with the head size, the softmax becomes nearly one-hot, and gradients vanish. I trained the `cpu` preset with and without the scaling (`train.py --no-attn-scale`):
+
+![Validation loss with and without sqrt(d) scaling](../assets/ablation_attention_scale.png)
+
+| | Final val loss | Average max attention weight | Attention entropy |
+|---|---|---|---|
+| With √d scaling | **1.590** | 0.45 | 1.77 nats |
+| Without √d scaling | 1.600 | 0.60 | 1.28 nats |
+
+**Removing it barely mattered here.** The model without scaling even learned faster at first, and finished only 0.01 worse. It did end up with noticeably **sharper attention** (the largest weight in each row averaged 0.60 instead of 0.45), which is the saturation effect the scaling exists to prevent, just not strongly enough to hurt a model this small. Two reasons it's mild here: weights start small (std 0.02), so the dot products begin close to zero, and the head size is only 32. The problem the scaling solves grows with the head size, which is why larger transformers keep it.
+
 ## Run
 
 ```bash
@@ -82,6 +116,15 @@ python part2_gpt/train.py --config gpu                     # train; saves checkp
 python part2_gpt/sample.py --config gpu --prompt "ROMEO:" --temperature 0.8 --top-k 20
 python part2_gpt/train.py --config cpu --model bigram --lr 1e-2   # bigram baseline
 pytest part2_gpt/tests
+
+# Experiments
+python part2_gpt/scripts/plot_attention.py --config gpu                    # every head
+python part2_gpt/scripts/plot_attention.py --config gpu --layer 0 --head 3  # one head, large
+python part2_gpt/scripts/attention_stats.py gpt_gpu --per-head             # what each head looks at
+python part2_gpt/train.py --config cpu --no-attn-scale                     # sqrt(d) ablation
+python part2_gpt/scripts/compare_runs.py gpt_cpu gpt_cpu_noscale --from-step 250 \
+    --labels "with √d scaling" "without √d scaling" --out ablation_attention_scale.png
+python part2_gpt/scripts/attention_stats.py gpt_cpu gpt_cpu_noscale
 ```
 
 ## What I learned
