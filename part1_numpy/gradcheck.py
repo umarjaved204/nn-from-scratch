@@ -25,7 +25,7 @@ def numerical_gradient(f, x, eps=1e-5):
         f_minus = f()
         x.flat[i] = old_value        # put it back
 
-        grad.flat[i] = (f_plus - f_minus) / (2*eps)  # TODO (blank 1): the centered difference formula
+        grad.flat[i] = (f_plus - f_minus) / (2 * eps)  # centered difference: rise over run
     return grad
 
 
