@@ -65,7 +65,7 @@ assets/         Plots and generated samples used in the READMEs
 
 ## What I learned
 
-_TBD: key insights, surprises and bugs worth remembering._
+The biggest one: writing backprop by hand in Part 1 made everything in Part 2 easier to follow. When PyTorch computed the gradients for me, I knew what it was doing and how to check it. More detail in each part's README: [Part 1](part1_numpy/README.md#what-i-learned) and [Part 2](part2_gpt/README.md#what-i-learned).
 
 ## References
 

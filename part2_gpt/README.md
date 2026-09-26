@@ -86,5 +86,9 @@ pytest part2_gpt/tests
 
 ## What I learned
 
-<!-- Write this in your own words: what clicked about attention, what surprised you, bugs worth remembering. -->
-_TBD_
+- **PyTorch does what I did by hand in Part 1.** `loss.backward()` is my four-line backward chain, and `optimizer.step()` is `W -= lr * dW`. Having written those myself made PyTorch feel a lot less like magic. The one new thing was `optimizer.zero_grad()`: PyTorch adds gradients up instead of replacing them, so you have to clear them every step.
+- **Attention is a weighted average.** Once I saw the mask trick (set the future scores to -inf, softmax, multiply by the values), it stopped being mysterious. Queries and keys just decide the weights.
+- **The baseline told me where the limit was.** The bigram model only sees one character, and it got stuck at 2.50 no matter how long it trained. Adding attention took it to 1.59, which showed me the problem was the model, not the training.
+- **The first loss says something about initialization.** The bigram model started at 4.73 instead of ln(65) = 4.17, because `nn.Embedding` starts with fairly large random weights. The GPT uses small initial weights and starts at 4.20.
+- **Hardware limits are real.** The standard 10.8M-parameter model needed slightly more than my GPU's 2 GB and slowed to about 3 seconds per step. Halving the batch size fixed it. Mixed precision, which I expected to speed things up, was actually slower on this GPU.
+- **A lower loss doesn't mean the text makes sense.** At 1.51 the model spells most words and gets the format right (speaker names, verse lines), but the text still doesn't mean anything.

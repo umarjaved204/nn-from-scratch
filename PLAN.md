@@ -15,7 +15,7 @@
 - [x] Turn the checks into `pytest` tests (`part1_numpy/tests/test_gradients.py`)
 - [ ] Stretch: momentum, Adam
 - [x] Write `part1_numpy/README.md` with results and plot
-- [ ] Write the "What I learned" section in your own words
+- [x] Write the "What I learned" section
 
 ## Phase 2 – Character-level GPT (`part2_gpt/`)
 - [x] 2.1 Tokenizer and data: vocab, `encode`/`decode`, train/val split, `get_batch` — *check: `decode(encode(s)) == s`*
@@ -29,7 +29,7 @@
 - [x] 2.8 Train the presets — *results: val loss 1.59 (cpu, 3 min), 1.51 (gpu, 14 min)*
 - [ ] Optional: train the `large` preset (~1 hour)
 - [x] Write `part2_gpt/README.md` with loss curve and samples
-- [ ] Write the "What I learned" section in your own words
+- [x] Write the "What I learned" section
 
 ## Phase 3 – Experiments (optional)
 - [ ] Remove pieces one at a time: positional embeddings, √d_k scaling, residuals
